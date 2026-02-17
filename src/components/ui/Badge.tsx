@@ -9,6 +9,7 @@ interface BadgeProps {
   size?: BadgeSize;
   rounded?: boolean;
   className?: string;
+  onClick?: () => void;
 }
 
 export const Badge: React.FC<BadgeProps> = ({
@@ -17,6 +18,7 @@ export const Badge: React.FC<BadgeProps> = ({
   size = 'md',
   rounded = false,
   className = '',
+  onClick,
 }) => {
   const variantClasses = {
     primary: 'bg-primary-100 text-primary-800',
@@ -35,12 +37,17 @@ export const Badge: React.FC<BadgeProps> = ({
   };
   
   const roundedClass = rounded ? 'rounded-full' : 'rounded';
+  const clickableClass = onClick ? 'cursor-pointer hover:opacity-80 transition-opacity' : '';
+  
+  const Component = onClick ? 'button' : 'span';
   
   return (
-    <span
-      className={`inline-flex items-center font-medium ${roundedClass} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+    <Component
+      type={onClick ? 'button' : undefined}
+      onClick={onClick}
+      className={`inline-flex items-center font-medium ${roundedClass} ${variantClasses[variant]} ${sizeClasses[size]} ${clickableClass} ${className}`}
     >
       {children}
-    </span>
+    </Component>
   );
 };

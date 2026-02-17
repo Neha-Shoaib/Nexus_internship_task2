@@ -5,6 +5,7 @@ interface CardProps {
   className?: string;
   onClick?: () => void;
   hoverable?: boolean;
+  variant?: 'default' | 'bordered' | 'flat';
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -12,13 +13,22 @@ export const Card: React.FC<CardProps> = ({
   className = '',
   onClick,
   hoverable = false,
+  variant = 'default',
 }) => {
-  const hoverableClass = hoverable ? 'transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer' : '';
+  const baseClasses = {
+    default: 'bg-white rounded-xl shadow-card border border-gray-100',
+    bordered: 'bg-white rounded-xl border border-gray-200',
+    flat: 'bg-gray-50 rounded-xl',
+  };
+
+  const hoverableClass = hoverable 
+    ? 'transform hover:-translate-y-1 transition-all duration-300 hover:shadow-lg cursor-pointer' 
+    : '';
   const clickableClass = onClick ? 'cursor-pointer' : '';
   
   return (
     <div 
-      className={`bg-white rounded-lg shadow-md overflow-hidden ${hoverableClass} ${clickableClass} ${className}`}
+      className={`${baseClasses[variant]} ${hoverableClass} ${clickableClass} ${className}`}
       onClick={onClick}
     >
       {children}
@@ -36,7 +46,7 @@ export const CardHeader: React.FC<CardHeaderProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`px-6 py-4 border-b border-gray-200 ${className}`}>
+    <div className={`px-6 py-4 border-b border-gray-100 ${className}`}>
       {children}
     </div>
   );
@@ -68,7 +78,7 @@ export const CardFooter: React.FC<CardFooterProps> = ({
   className = '',
 }) => {
   return (
-    <div className={`px-6 py-4 border-t border-gray-200 ${className}`}>
+    <div className={`px-6 py-4 border-t border-gray-100 ${className}`}>
       {children}
     </div>
   );

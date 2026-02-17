@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, CircleDollarSign, Building2, AlertCircle } from 'lucide-react';
+import { User, Mail, Lock, CircleDollarSign, Building2, AlertCircle, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
+import { PasswordStrengthMeter } from '../../components/ui/PasswordStrengthMeter';
 import { UserRole } from '../../types';
+import toast from 'react-hot-toast';
 
 export const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -15,8 +17,16 @@ export const RegisterPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
+  // 2FA State
+  const [show2FA, setShow2FA] = useState(false);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  
   const { register } = useAuth();
   const navigate = useNavigate();
+  
+  const DEMO_OTP = '123456';
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,17 +38,165 @@ export const RegisterPage: React.FC = () => {
       return;
     }
     
+    // Check password strength
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      await register(name, email, password, role);
-      // Redirect based on user role
-      navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
+      // Show 2FA after successful validation
+      setShow2FA(true);
+      setIsLoading(false);
+      
+      // Simulate sending OTP to email
+      toast.success(`OTP sent to ${email}!`);
     } catch (err) {
       setError((err as Error).message);
       setIsLoading(false);
     }
   };
+  
+  // Handle OTP input
+  useEffect(() => {
+    if (show2FA && inputRefs.current[0]) {
+      inputRefs.current[0]?.focus();
+    }
+  }, [show2FA]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (value.length > 1) return;
+    
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    if (newOtp.every(digit => digit !== '') && !isVerifying) {
+      handleVerify(newOtp.join(''));
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleVerify = async (code: string) => {
+    setIsVerifying(true);
+    
+    // Simulate verification delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    if (code === DEMO_OTP) {
+      toast.success('Email verified successfully!');
+      
+      try {
+        // Complete registration after successful OTP verification
+        await register(name, email, password, role);
+        // Redirect based on user role
+        navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
+      } catch (err) {
+        setError((err as Error).message);
+      }
+    } else {
+      toast.error('Invalid verification code');
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+    }
+    setIsVerifying(false);
+  };
+
+  const handleResend = () => {
+    toast.success(`New OTP sent to ${email}!`);
+    setOtp(['', '', '', '', '', '']);
+    inputRefs.current[0]?.focus();
+  };
+
+  const handleCancel2FA = () => {
+    setShow2FA(false);
+    setOtp(['', '', '', '', '', '']);
+  };
+
+  // 2FA Verification Screen
+  if (show2FA) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="flex justify-center">
+            <div className="w-12 h-12 bg-primary-600 rounded-md flex items-center justify-center">
+              <Shield size={24} className="text-white" />
+            </div>
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Email Verification
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            We've sent a 6-digit code to <strong>{email}</strong>
+          </p>
+        </div>
+
+        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="space-y-6">
+              {/* OTP Input */}
+              <div className="flex justify-center space-x-2">
+                {otp.map((digit, index) => (
+                  <input
+                    key={index}
+                    ref={el => inputRefs.current[index] = el}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={e => handleOtpChange(index, e.target.value)}
+                    onKeyDown={e => handleKeyDown(index, e)}
+                    className="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-colors"
+                  />
+                ))}
+              </div>
+
+              <Button
+                onClick={() => handleVerify(otp.join(''))}
+                isLoading={isVerifying}
+                fullWidth
+                size="lg"
+              >
+                Verify Email
+              </Button>
+
+              <div className="flex justify-between">
+                <button
+                  onClick={handleCancel2FA}
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  Back to registration
+                </button>
+                <button
+                  onClick={handleResend}
+                  className="text-sm text-primary-600 hover:text-primary-700"
+                >
+                  Resend code
+                </button>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-700 text-center">
+                  Demo OTP: <strong>{DEMO_OTP}</strong>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -122,15 +280,20 @@ export const RegisterPage: React.FC = () => {
               startAdornment={<Mail size={18} />}
             />
             
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              fullWidth
-              startAdornment={<Lock size={18} />}
-            />
+            <div>
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                fullWidth
+                startAdornment={<Lock size={18} />}
+              />
+              <div className="mt-2">
+                <PasswordStrengthMeter password={password} />
+              </div>
+            </div>
             
             <Input
               label="Confirm password"

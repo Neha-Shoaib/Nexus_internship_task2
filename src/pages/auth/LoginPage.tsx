@@ -15,7 +15,7 @@ export const LoginPage: React.FC = () => {
   
   const { login } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -42,7 +42,8 @@ export const LoginPage: React.FC = () => {
     }
     setRole(userRole);
   };
-  
+
+  // Regular Login Screen
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -65,7 +66,7 @@ export const LoginPage: React.FC = () => {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {error && (
-            <div className="mb-4 bg-error-50 border border-error-500 text-error-700 px-4 py-3 rounded-md flex items-start">
+            <div className="mb-4 bg-red-50 border border-red-500 text-red-700 px-4 py-3 rounded-md flex items-start">
               <AlertCircle size={18} className="mr-2 mt-0.5" />
               <span>{error}</span>
             </div>

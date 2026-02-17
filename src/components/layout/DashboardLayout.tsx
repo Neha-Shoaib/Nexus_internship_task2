@@ -1,11 +1,16 @@
 import React from 'react';
-import { Outlet, Navigate } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
+import { Walkthrough } from '../walkthrough/Walkthrough';
 
 export const DashboardLayout: React.FC = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
+  
+  // Determine user role from URL path
+  const userRole = location.pathname.includes('entrepreneur') ? 'entrepreneur' : 'investor';
   
   if (isLoading) {
     return (
@@ -32,6 +37,9 @@ export const DashboardLayout: React.FC = () => {
           </div>
         </main>
       </div>
+      
+      {/* Walkthrough available on all dashboard pages */}
+      <Walkthrough userRole={userRole} />
     </div>
   );
 };

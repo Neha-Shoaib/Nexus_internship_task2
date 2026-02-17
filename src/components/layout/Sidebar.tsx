@@ -3,16 +3,17 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { 
   Home, Building2, CircleDollarSign, Users, MessageCircle, 
-  Bell, FileText, Settings, HelpCircle
+  Bell, FileText, Settings, HelpCircle, Calendar, DollarSign, Video
 } from 'lucide-react';
 
 interface SidebarItemProps {
   to: string;
   icon: React.ReactNode;
   text: string;
+  'data-tour'?: string;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, text }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, text, ...props }) => {
   return (
     <NavLink
       to={to}
@@ -23,6 +24,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, text }) => {
             : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
         }`
       }
+      {...props}
     >
       <span className="mr-3">{icon}</span>
       <span className="text-sm font-medium">{text}</span>
@@ -37,29 +39,35 @@ export const Sidebar: React.FC = () => {
   
   // Define sidebar items based on user role
   const entrepreneurItems = [
-    { to: '/dashboard/entrepreneur', icon: <Home size={20} />, text: 'Dashboard' },
+    { to: '/dashboard/entrepreneur', icon: <Home size={20} />, text: 'Dashboard', 'data-tour': 'dashboard' },
     { to: '/profile/entrepreneur/' + user.id, icon: <Building2 size={20} />, text: 'My Startup' },
-    { to: '/investors', icon: <CircleDollarSign size={20} />, text: 'Find Investors' },
-    { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
-    { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
-    { to: '/documents', icon: <FileText size={20} />, text: 'Documents' },
+    { to: '/investors', icon: <CircleDollarSign size={20} />, text: 'Find Investors', 'data-tour': 'investors' },
+    { to: '/calendar', icon: <Calendar size={20} />, text: 'Calendar', 'data-tour': 'calendar' },
+    { to: '/video-call', icon: <Video size={20} />, text: 'Video Call', 'data-tour': 'video-call' },
+    { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages', 'data-tour': 'messages' },
+    { to: '/payments', icon: <DollarSign size={20} />, text: 'Payments', 'data-tour': 'payments' },
+    { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications', 'data-tour': 'notifications' },
+    { to: '/documents', icon: <FileText size={20} />, text: 'Documents', 'data-tour': 'documents' },
   ];
   
   const investorItems = [
-    { to: '/dashboard/investor', icon: <Home size={20} />, text: 'Dashboard' },
+    { to: '/dashboard/investor', icon: <Home size={20} />, text: 'Dashboard', 'data-tour': 'dashboard' },
     { to: '/profile/investor/' + user.id, icon: <CircleDollarSign size={20} />, text: 'My Portfolio' },
-    { to: '/entrepreneurs', icon: <Users size={20} />, text: 'Find Startups' },
-    { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages' },
-    { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications' },
-    { to: '/deals', icon: <FileText size={20} />, text: 'Deals' },
+    { to: '/entrepreneurs', icon: <Users size={20} />, text: 'Find Startups', 'data-tour': 'startups' },
+    { to: '/deals', icon: <FileText size={20} />, text: 'Deals', 'data-tour': 'deals' },
+    { to: '/calendar', icon: <Calendar size={20} />, text: 'Calendar', 'data-tour': 'calendar' },
+    { to: '/video-call', icon: <Video size={20} />, text: 'Video Call', 'data-tour': 'video-call' },
+    { to: '/messages', icon: <MessageCircle size={20} />, text: 'Messages', 'data-tour': 'messages' },
+    { to: '/payments', icon: <DollarSign size={20} />, text: 'Payments', 'data-tour': 'payments' },
+    { to: '/notifications', icon: <Bell size={20} />, text: 'Notifications', 'data-tour': 'notifications' },
   ];
   
   const sidebarItems = user.role === 'entrepreneur' ? entrepreneurItems : investorItems;
   
   // Common items at the bottom
   const commonItems = [
-    { to: '/settings', icon: <Settings size={20} />, text: 'Settings' },
-    { to: '/help', icon: <HelpCircle size={20} />, text: 'Help & Support' },
+    { to: '/settings', icon: <Settings size={20} />, text: 'Settings', 'data-tour': 'settings' },
+    { to: '/help', icon: <HelpCircle size={20} />, text: 'Help & Support', 'data-tour': 'help' },
   ];
   
   return (
@@ -73,6 +81,7 @@ export const Sidebar: React.FC = () => {
                 to={item.to}
                 icon={item.icon}
                 text={item.text}
+                data-tour={item['data-tour']}
               />
             ))}
           </div>
